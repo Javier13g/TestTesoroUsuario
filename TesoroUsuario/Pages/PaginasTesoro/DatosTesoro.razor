@@ -1,0 +1,88 @@
+@using TestTesoroUsuario.Data 
+@inject IServicioTesoro IST
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<Usuarios> SignInManager
+@inject UserManager<Usuarios> UserManager
+
+<div class="table-responsive" style="background-color: @bColor; border-radius: 5px;">
+    <table class="table table-dark">
+        <thead>
+            <th>Id Tesoro</th>
+            <th>Tesoro</th>
+            <th>Descripcion</th>
+            <th>Fecha descubrimiento</th>
+            <th>Lugar del tesoro</th>
+            <th>Valor monetario</th>
+            <th>Peso</th>
+            <th>Referencia</th>
+        </thead>
+        <tbody>
+            @if(treasures.Count > 0){
+                @foreach (TesoroUser T in treasures)
+                {
+                <tr>
+                    <td>@T.Id</td>
+                    <td>@T.NombreTesoro</td>
+                    <td>@T.DescripcionTesoro</td>
+                    <td>@T.FechaTesoro.Day / @T.FechaTesoro.Month / @T.FechaTesoro.Year </td>
+                    <td>@T.LugarTesoro</td>
+                    <td>@T.ValorTesoro</td>
+                    <td>@T.PesoTesoro</td>
+                    <td><img src="@T.UrlTesoro" width="200px" alt="imagen"/></td>
+                    <td></td>
+                </tr>   
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@code 
+{
+    [Parameter]
+    public Guid Uid {get; set;}
+    [Parameter]
+    public EventCallback ChangeRL {get; set;}
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private string bColor = "#ffffff";
+    
+    private Usuarios user = new Usuarios();
+
+    protected override async Task OnInitializedAsync(){
+        var authState = await authenticationStateTask;
+        user = await UserManager.GetUserAsync(authState.User);
+        Uid = user.Id_Usuario;
+        bColor = user.Color_Usuario;
+    }
+
+    List<TesoroUser> treasures = new List<TesoroUser>();
+    TesoroUser ModalT = new TesoroUser();
+    private string modalId = "tesoroModalDetalle";
+    private void SetTreasureModal(TesoroUser t){
+        ModalT = t;
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await Load();
+        StateHasChanged();    
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //if(firstRender)
+        StateHasChanged();
+        await Load();
+    }
+
+    private async Task Load(){
+            if(Uid != null)
+            treasures = await IST.GetAllTreasure(Uid);
+    }
+
+    
+
+}

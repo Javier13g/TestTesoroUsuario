@@ -1,0 +1,33 @@
+@page "/indexTesoro"
+@using Microsoft.AspNetCore.Identity
+@using TestTesoroUsuario.Data
+@using TestTesoroUsuario.Pages.PaginasTesoro
+@inject UserManager<Usuarios> UserManager
+
+<div class="col-xs-12">
+    <TesorosAgg Uid="userId" />
+</div>
+<br/>
+<div>
+    <DatosTesoro Uid="userId" />
+</div>
+
+@code
+{
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private Usuarios usu = new Usuarios();
+    private Guid userId;
+
+    private void evnt(){
+        Console.WriteLine("enento");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateTask;
+        usu = await UserManager.GetUserAsync(authState.User);
+        userId = usu.Id_Usuario;
+    }
+}

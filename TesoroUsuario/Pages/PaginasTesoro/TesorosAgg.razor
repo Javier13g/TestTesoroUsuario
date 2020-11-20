@@ -1,0 +1,160 @@
+@using TestTesoroUsuario.Data
+
+@inject IServicioTesoro IST
+
+<button class="mdc-button mdc-button--raised" data-toggle="modal" data-target="#agregarTesoro">
+    <span class="mdc-button__label">Agregar Tesoro</span>
+</button>
+
+<div class="modal fade" id="agregarTesoro" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Agregar Reporte</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-left:auto; margin-right:auto;">
+                    <div class="">
+                        <form class="was-validated" @onsubmit="HandleSubmit">
+                                    <div class="form-group">
+                                        <label for="nombre">Nombre</label>
+                                        <input type="text" id="nombre" name="nombre" class="form-control" @bind-value="@tesoro.NombreTesoro"
+                                         placeholder="Digite el nombre" required />
+
+                                        <div class="invalid-feedback">
+                                            Nombre es requerido!!!!.
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="descripcion">Descripcion </label>
+                                        <input type="text" id="descripcion" name="descripcion" class="form-control" @bind-value="@tesoro.DescripcionTesoro"
+                                               placeholder="Digite la descripcion" required />
+                                        <div class="invalid-feedback">
+                                            La descripcion es requerida!!!!
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fecha">Fecha</label>
+                                        <input type="date" id="fecha" name="fecha" class="form-control" @bind-value="@tesoro.FechaTesoro"
+                                               placeholder="Digite la fecha" required />
+                                        <div class="invalid-feedback">
+                                            la fecha es requerida!!!!.
+                                        </div> 
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lugar">Lugar</label>
+                                        <input type="text" id="lugar" name="lugar" class="form-control" @bind-value="@tesoro.LugarTesoro"
+                                               placeholder="Digite el lugar" required />
+                                        <div class="invalid-feedback">
+                                            El lugar es requerido!!!!.
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="latitud">Latitud</label>
+                                        <input type="number" id="latitud" name="latitud" class="form-control" @bind-value="@coord.Lat"
+                                               placeholder="Digite la latitud" required />
+                                        <div class="invalid-feedback">
+                                            la latitud es requerida!!!!.
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="longitud">Longitud</label>
+                                        <input type="number" id="longitud" class="form-control" @bind-value="@coord.Lng"
+                                               placeholder="Digite la longitud" required />
+                                        <div class="invalid-feedback">
+                                            la longitud es requerida!!!!.
+                                        </div>
+                                    </div> 
+
+                                    <div class="form-group">
+                                        <label for="valor">Valor</label>
+                                        <input type="text" id="url" class="form-control" @bind-value="@tesoro.ValorTesoro"
+                                               placeholder="Digite el valor" required />
+                                        <div class="invalid-feedback">
+                                            el valor es requerido!!!!.
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="peso">Peso</label>
+                                        <input type="text" id="peso" class="form-control" @bind-value="@tesoro.PesoTesoro"
+                                               placeholder="Digite el peso" required />
+                                        <div class="invalid-feedback">
+                                            el peso es requerido!!!!.
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="url">Referencia</label>
+                                        <input type="text" id="url" class="form-control" @bind-value="@tesoro.UrlTesoro"
+                                               placeholder="Digite la referencia" required />
+                                        <div class="invalid-feedback">
+                                            la referencia es requerida!!!!.
+                                        </div>
+                                    </div>
+
+                                    <input type="submit" class="btn btn-success" value="Guardar Tesoro"/>  
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code 
+{
+    [Parameter]
+    public Guid Uid {get; set;}
+    private TesoroUser tesoro = new TesoroUser
+    {
+        Id = Guid.NewGuid(),
+        FechaTesoro = DateTime.Today
+    };
+    private Coordenadas_Tesoro coord = new Coordenadas_Tesoro
+    {
+        Id = Guid.NewGuid()
+    };
+
+    private async Task HandleSubmit()
+    {
+        Console.WriteLine("Se Inicio El Guardado");
+        tesoro.Latitud_Longitud = coord;
+        var status = await IST.SetTreasure(tesoro);
+        if(status){
+            tesoro = new TesoroUser
+            {
+                Id = Guid.NewGuid(),
+                FechaTesoro = DateTime.Today
+            };
+            coord = new Coordenadas_Tesoro
+            {
+                Id = Guid.NewGuid()
+            };
+            StateHasChanged();
+        }
+        Console.WriteLine(status)
+;        Console.WriteLine("Finalizo El Guardado");
+
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender){
+            if(Uid != null){
+                coord.Tid = tesoro.Id;
+                coord.Uid = Uid;
+                tesoro.Id_Usuario = Uid;
+            }
+        }
+    }
+}
